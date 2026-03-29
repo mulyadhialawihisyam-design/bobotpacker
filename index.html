@@ -14,25 +14,21 @@
         .status-perbantuan { color: #64748b; background: #f8fafc; border: 1px solid #f1f5f9; }
         .bg-strategy { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
         
-        /* ===========================================
-           CSS FULL SCREEN LOADING NATIVE (CSS SPINNER)
-           =========================================== */
         #loadingScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #0f172a; /* Warna Slate 900 Solid */
+            background: #0f172a;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 9999; /* Pastikan paling depan */
+            z-index: 9999;
             transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Dual Ring CSS Spinner */
         .wms-loader {
             display: inline-block;
             position: relative;
@@ -40,13 +36,13 @@
             height: 80px;
         }
         .wms-loader div {
-            box-sizing: border-border-box;
+            box-sizing: border-box;
             display: block;
             position: absolute;
             width: 64px;
             height: 64px;
             margin: 8px;
-            border: 6px solid #2563eb; /* Biru Neon */
+            border: 6px solid #2563eb;
             border-radius: 50%;
             animation: wms-loader 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
             border-color: #2563eb transparent transparent transparent;
@@ -62,7 +58,7 @@
 
         .loading-text {
             margin-top: 2rem;
-            color: #94a3b8; /* Slate 400 */
+            color: #94a3b8;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5em;
@@ -74,9 +70,30 @@
             0%, 100% { opacity: 1; }
             50% { opacity: .3; }
         }
+
+       
+        /* Styling Footer Solid & Bold */
+.footer-ai-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: #1e293b; /* Slate gelap yang solid */
+}
+
+.brand-mulya { color: #0f172a; } /* Hitam pekat */
+.brand-id { color: #2563eb; font-style: italic; } /* Biru elektrik */
+.badge-ai {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
     </style>
 </head>
-<body class="pb-20">
+<body class="flex flex-col min-h-screen">
 
     <div id="loadingScreen">
         <div class="relative flex flex-col items-center">
@@ -91,7 +108,11 @@
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
                 <h1 class="text-3xl font-black uppercase tracking-tighter leading-none">Packing Analytics</h1>
-                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Internal WMS Dashboard v2.1</p>
+                <div class="flex items-center gap-3 mt-2">
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Internal WMS Dashboard v2.2</p>
+                    <span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+                    <p class="text-blue-500 text-[10px] font-black uppercase tracking-widest">Update: <span id="ui-last-update">...</span></p>
+                </div>
             </div>
             
             <div class="flex gap-10 text-right">
@@ -111,7 +132,7 @@
         </div>
     </div>
 
-    <div class="max-w-6xl mx-auto px-6 -mt-12">
+    <div class="max-w-6xl mx-auto px-6 -mt-12 flex-1 w-full">
         <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
                 <textarea id="searchBox" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm mono outline-none focus:border-blue-500 transition-all" rows="2" placeholder="TEMPEL NAMA UNTUK FILTER..."></textarea>
@@ -131,6 +152,26 @@
             </div>
         </div>
     </div>
+
+    <footer class="mt-16 pb-12 pt-8 border-t border-slate-100">
+    <div class="flex flex-col items-center justify-center gap-4">
+        <p class="text-[9px] font-black uppercase text-slate-400 tracking-[0.5em]">System Core Integrated</p>
+        
+        <div class="footer-brand-container flex items-center">
+            <p class="brand-text uppercase">
+                Powered by : <span class="brand-mulya">Muly@</span><span class="brand-highlight">ID</span>
+            </p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <span class="h-[1px] w-4 bg-slate-200"></span>
+            <p class="text-[7px] font-mono text-slate-400 font-bold uppercase tracking-widest">
+                © 2026 ANALYTICS CORE. ALL RIGHTS RESERVED.
+            </p>
+            <span class="h-[1px] w-4 bg-slate-200"></span>
+        </div>
+    </div>
+</footer>
 
     <div id="modalList" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 z-40">
         <div class="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -168,7 +209,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxiGMTmrV_-Z8cFJn2M0bWnay1EtZl92dcHUzqjj7kkV_RIksr7401gaKOw_u_6wV8_/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwZHSfQ1MvBzWnbOKqjt7WJcOMT-Zn-K1RLoLLDqJ65zI0XN1cy5MYJa8f5fdrN_Krn/exec";
         let localData = [];
 
         async function init() {
@@ -176,11 +217,13 @@
             try {
                 const res = await fetch(API_URL);
                 const data = await res.json();
+                
                 localData = data.users || [];
                 document.getElementById('ui-global').innerText = data.bobotGlobal.toLocaleString();
+                document.getElementById('ui-last-update').innerText = data.lastUpdate || "-";
+                
                 render();
                 
-                // Efek transisi keluar loading (halus)
                 setTimeout(() => {
                     loader.style.opacity = '0';
                     setTimeout(() => { loader.style.display = 'none'; }, 600);
@@ -188,7 +231,7 @@
 
             } catch (e) {
                 console.error("Gagal sinkronisasi data", e);
-                loader.innerHTML = '<p class="text-red-500 font-bold">KONEKSI GAGAL. SILAKAN REFRESH.</p>';
+                loader.innerHTML = '<p class="text-red-500 font-bold uppercase tracking-widest">KONEKSI GAGAL. SILAKAN REFRESH.</p>';
             }
         }
 
