@@ -6,6 +6,7 @@
     <title>Enterprise Packing Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -71,26 +72,25 @@
             50% { opacity: .3; }
         }
 
-       
         /* Styling Footer Solid & Bold */
-.footer-ai-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    color: #1e293b; /* Slate gelap yang solid */
-}
+        .footer-ai-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            color: #1e293b; 
+        }
 
-.brand-mulya { color: #0f172a; } /* Hitam pekat */
-.brand-id { color: #2563eb; font-style: italic; } /* Biru elektrik */
-.badge-ai {
-    background: #0f172a;
-    color: #ffffff;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 9px;
-    margin-left: 8px;
-    vertical-align: middle;
-}
+        .brand-mulya { color: #0f172a; } 
+        .brand-id { color: #2563eb; font-style: italic; } 
+        .badge-ai {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -134,11 +134,19 @@
 
     <div class="max-w-6xl mx-auto px-6 -mt-12 flex-1 w-full">
         <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                <textarea id="searchBox" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm mono outline-none focus:border-blue-500 transition-all" rows="2" placeholder="TEMPEL NAMA UNTUK FILTER..."></textarea>
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full">
+                    <textarea id="searchBox" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm mono outline-none focus:border-blue-500 transition-all" rows="2" placeholder="TEMPEL NAMA UNTUK FILTER..."></textarea>
+                </div>
+                <button onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export Excel
+                </button>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table id="mainTable" class="w-full text-left border-collapse">
                     <thead>
                         <tr class="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
                             <th class="p-8">Operator</th>
@@ -153,25 +161,57 @@
         </div>
     </div>
 
+    <style>
+        @keyframes colorShift {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { 
+                text-shadow: 0 0 5px rgba(255,255,255,0.2), 0 0 10px currentColor; 
+            }
+            50% { 
+                text-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 20px currentColor; 
+            }
+        }
+
+        .brand-glow {
+            color: #00d2ff; 
+            animation: 
+                colorShift 5s linear infinite, 
+                glowPulse 2s ease-in-out infinite;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .brand-glow:hover {
+            letter-spacing: 0.1em;
+            cursor: default;
+        }
+    </style>
+
     <footer class="mt-16 pb-12 pt-8 border-t border-slate-100">
-    <div class="flex flex-col items-center justify-center gap-4">
-        <p class="text-[9px] font-black uppercase text-slate-400 tracking-[0.5em]">System Core Integrated</p>
-        
-        <div class="footer-brand-container flex items-center">
-            <p class="brand-text uppercase">
-                Powered by : <span class="brand-mulya">Muly@</span><span class="brand-highlight">ID</span>
+        <div class="flex flex-col items-center justify-center gap-4">
+            <p class="text-[9px] font-black uppercase text-slate-400 tracking-[0.5em]">
+                System Core Integrated
             </p>
+            
+            <div class="footer-brand-container flex items-center">
+                <p class="brand-text uppercase brand-glow text-sm">
+                    Powered by : <span class="brand-mulya">Muly@</span><span class="brand-highlight">ID</span>
+                </p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="h-[1px] w-4 bg-slate-200"></span>
+                <p class="text-[7px] font-mono text-slate-400 font-bold uppercase tracking-widest">
+                    © 2026 ANALYTICS CORE. ALL RIGHTS RESERVED.
+                </p>
+                <span class="h-[1px] w-4 bg-slate-200"></span>
+            </div>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <span class="h-[1px] w-4 bg-slate-200"></span>
-            <p class="text-[7px] font-mono text-slate-400 font-bold uppercase tracking-widest">
-                © 2026 ANALYTICS CORE. ALL RIGHTS RESERVED.
-            </p>
-            <span class="h-[1px] w-4 bg-slate-200"></span>
-        </div>
-    </div>
-</footer>
+    </footer>
 
     <div id="modalList" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 z-40">
         <div class="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -209,150 +249,206 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwZHSfQ1MvBzWnbOKqjt7WJcOMT-Zn-K1RLoLLDqJ65zI0XN1cy5MYJa8f5fdrN_Krn/exec";
-        let localData = [];
+    const API_URL = "https://script.google.com/macros/s/AKfycbzFnlLyDEoI_OyUx4I2t8Zp63_Ix725nNqVSZejglEtDxMmcQPZkKhH8cDeMMnFAhDK/exec";
+    let localData = [];
+    let currentFilteredData = []; // Variable pembantu untuk export
 
-        async function init() {
-            const loader = document.getElementById('loadingScreen');
-            try {
-                const res = await fetch(API_URL);
-                const data = await res.json();
-                
-                localData = data.users || [];
-                document.getElementById('ui-global').innerText = data.bobotGlobal.toLocaleString();
-                document.getElementById('ui-last-update').innerText = data.lastUpdate || "-";
-                
-                render();
-                
-                setTimeout(() => {
-                    loader.style.opacity = '0';
-                    setTimeout(() => { loader.style.display = 'none'; }, 600);
-                }, 800);
+    async function init() {
+        const loader = document.getElementById('loadingScreen');
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            
+            localData = data.users || [];
 
-            } catch (e) {
-                console.error("Gagal sinkronisasi data", e);
-                loader.innerHTML = '<p class="text-red-500 font-bold uppercase tracking-widest">KONEKSI GAGAL. SILAKAN REFRESH.</p>';
-            }
+            document.getElementById('ui-global').innerText = Number(data.bobotGlobal || 0).toLocaleString();
+            document.getElementById('ui-last-update').innerText = data.lastUpdate || "-";
+            
+            render();
+            
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => { loader.style.display = 'none'; }, 600);
+            }, 800);
+
+        } catch (e) {
+            console.error("Gagal sinkronisasi data", e);
+            loader.innerHTML = '<p class="text-red-500 font-bold uppercase tracking-widest">KONEKSI GAGAL. SILAKAN REFRESH.</p>';
+        }
+    }
+
+    function render() {
+        const query = document.getElementById('searchBox').value.toLowerCase();
+        const filter = query.split(/\n+/).map(n => n.trim()).filter(n => n !== "");
+        
+        let filtered = localData;
+
+        if (filter.length > 0) {
+            filtered = localData.filter(u => 
+                filter.some(f => (u.nama || "").toLowerCase().includes(f))
+            );
         }
 
-        function render() {
-            const query = document.getElementById('searchBox').value.toLowerCase();
-            const filter = query.split(/\n+/).map(n => n.trim()).filter(n => n !== "");
-            
-            let filtered = localData;
-            if (filter.length > 0) {
-                filtered = localData.filter(u => filter.some(f => u.nama.toLowerCase().includes(f)));
-            }
+        currentFilteredData = filtered; // Simpan data terfilter untuk export
 
-            let sumP = 0, sumK = 0;
-            const tbody = document.getElementById('tableContent');
-            tbody.innerHTML = '';
+        let sumP = 0;
+        let sumK = 0;
 
-            filtered.sort((a,b) => b.totalPoinTampil - a.totalPoinTampil).forEach(u => {
-                sumP += u.totalPoinTampil;
-                sumK += u.target;
-                const pct = Math.min((u.totalPoinTampil / u.target) * 100, 100);
-                const sClass = u.status === "SENIOR" ? "status-senior" : (u.status === "PROBATION" ? "status-probation" : "status-perbantuan");
+        const tbody = document.getElementById('tableContent');
+        tbody.innerHTML = '';
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-8">
-                            <div class="font-black text-slate-800 uppercase text-sm leading-none tracking-tight">${u.nama}</div>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span class="text-[8px] font-black px-2 py-0.5 rounded border uppercase ${sClass}">${u.status}</span>
-                                <span class="text-[9px] text-slate-400 font-mono tracking-widest">${u.username}</span>
-                            </div>
-                        </td>
-                        <td class="p-8 text-center">
-                            <div class="text-2xl font-black text-slate-800 leading-none">${u.totalPoinTampil}</div>
-                            <div class="text-[8px] text-slate-400 font-bold uppercase mt-1">Harian: ${u.target}</div>
-                        </td>
-                        <td class="p-8 min-w-[200px]">
-                            <div class="flex justify-between mb-2 text-[9px] font-black uppercase text-slate-400">
-                                <span>Efisiensi</span>
-                                <span class="text-slate-900">${Math.round((u.totalPoinTampil / u.target) * 100)}%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div class="h-full bg-blue-600 shadow-lg transition-all duration-700" style="width: ${pct}%"></div>
-                            </div>
-                        </td>
-                        <td class="p-8 text-right">
-                            <button onclick="showList('${u.username}')" class="bg-slate-900 text-white px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg active:scale-95">Detail Metrik</button>
-                        </td>
-                    </tr>
-                `;
-            });
+        filtered
+        .sort((a,b) => Number(b.totalPoinTampil || 0) - Number(a.totalPoinTampil || 0))
+        .forEach(u => {
 
-            document.getElementById('ui-pencapaian').innerText = sumP.toLocaleString();
-            document.getElementById('ui-kapasitas').innerText = sumK.toLocaleString();
-        }
+            const poin = Number(u.totalPoinTampil || 0);
+            const target = Number(u.target || 0);
 
-        function showList(un) {
-            const u = localData.find(x => x.username === un);
-            if (!u) return;
-            
-            document.getElementById('modalUserName').innerText = u.nama;
-            document.getElementById('modalUserStatus').innerText = u.status + " • TARGET " + u.target;
-            
-            const sisa = Math.max(u.target - u.totalPoin, 0);
-            const grid = document.getElementById('strategyGrid');
-            
-            if (sisa <= 0) {
-                grid.innerHTML = `<div class="col-span-3 text-center py-2 text-green-400 font-black text-[10px] uppercase tracking-widest">Target Tercapai! Kerja Bagus.</div>`;
-            } else {
-                const pBulk = (0.6 + 0.3 + (22 * 0.1)) * 0.5;
-                const pMulti = (0.6 + 0.3 + (5 * 0.1)) * 0.5;
-                const pSingle = (0.6 + 0.3 + (1 * 0)) * 0.5;
+            sumP += poin;
+            sumK += target;
 
-                grid.innerHTML = `
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center">
-                        <p class="text-[7px] font-black text-blue-400 uppercase mb-1">Station BULK</p>
-                        <p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pBulk)} Pkt</p>
-                        <p class="text-[7px] text-slate-500 mt-1 italic">Min. 22 Qty</p>
-                    </div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center">
-                        <p class="text-[7px] font-black text-purple-400 uppercase mb-1">Station MULTI</p>
-                        <p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pMulti)} Pkt</p>
-                        <p class="text-[7px] text-slate-500 mt-1 italic">Min. 5 Qty</p>
-                    </div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center">
-                        <p class="text-[7px] font-black text-orange-400 uppercase mb-1">Station SINGLE</p>
-                        <p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pSingle)} Pkt</p>
-                        <p class="text-[7px] text-slate-500 mt-1 italic">Min. 1 Qty</p>
-                    </div>
-                `;
-            }
+            const pct = target > 0 ? Math.min((poin / target) * 100, 100) : 0;
 
-            let html = '';
-            u.detailCL.forEach((d, idx) => {
-                html += `
-                    <div onclick="showFormula('${un}', ${idx})" class="bg-white p-5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm cursor-pointer hover:border-blue-400 transition-all">
-                        <div class="flex items-center gap-4">
-                            <div class="flex flex-col gap-1">
-                                <span class="px-2 py-0.5 rounded-md ${d.peran === 'Packer' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'} text-[7px] font-black border border-current uppercase w-fit tracking-tighter">${d.peran}</span>
-                                <p class="font-black text-slate-800 mono text-xs uppercase">${d.cl}</p>
-                                <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">[ ${d.kategori} ]</span>
-                            </div>
+            const sClass = u.status === "SENIOR" 
+                ? "status-senior" 
+                : (u.status === "PROBATION" 
+                    ? "status-probation" 
+                    : "status-perbantuan");
+
+            tbody.innerHTML += `
+                <tr>
+                    <td class="p-8">
+                        <div class="font-black text-slate-800 uppercase text-sm leading-none tracking-tight">${u.nama}</div>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-[8px] font-black px-2 py-0.5 rounded border uppercase ${sClass}">${u.status}</span>
+                            <span class="text-[9px] text-slate-400 font-mono tracking-widest">${u.username}</span>
                         </div>
-                        <p class="text-xl font-black text-slate-900 leading-none">+${Number(d.poinDapat).toFixed(2)}</p>
+                    </td>
+                    <td class="p-8 text-center">
+                        <div class="text-2xl font-black text-slate-800 leading-none">${poin}</div>
+                        <div class="text-[8px] text-slate-400 font-bold uppercase mt-1">Harian: ${target}</div>
+                    </td>
+                    <td class="p-8 min-w-[200px]">
+                        <div class="flex justify-between mb-2 text-[9px] font-black uppercase text-slate-400">
+                            <span>Efisiensi</span>
+                            <span class="text-slate-900">${target > 0 ? Math.round((poin / target) * 100) : 0}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-600 shadow-lg transition-all duration-700" style="width: ${pct}%"></div>
+                        </div>
+                    </td>
+                    <td class="p-8 text-right">
+                        <button onclick="showList('${u.username}')" class="bg-slate-900 text-white px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg active:scale-95">
+                            Detail Metrik
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('ui-pencapaian').innerText = sumP.toLocaleString();
+        document.getElementById('ui-kapasitas').innerText = sumK.toLocaleString();
+    }
+
+    // FUNGSI BARU: DOWNLOAD EXCEL
+    function downloadExcel() {
+        if (currentFilteredData.length === 0) {
+            alert("Tidak ada data untuk di-export.");
+            return;
+        }
+
+        // Format data untuk Excel
+        const excelData = currentFilteredData.map(u => ({
+            "Nama Operator": u.nama,
+            "Username": u.username,
+            "Status": u.status,
+            "Skor Poin": u.totalPoinTampil,
+            "Target Harian": u.target,
+            "Efisiensi (%)": u.target > 0 ? Math.round((u.totalPoinTampil / u.target) * 100) : 0
+        }));
+
+        // Buat worksheet
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Packing Analytics");
+
+        // Simpan file
+        const timestamp = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(workbook, `Packing_Analytics_Export_${timestamp}.xlsx`);
+    }
+
+    function showList(un) {
+        const u = localData.find(x => x.username === un);
+        if (!u) return;
+        
+        document.getElementById('modalUserName').innerText = u.nama;
+        document.getElementById('modalUserStatus').innerText = u.status + " • TARGET " + u.target;
+        
+        const sisa = Math.max((Number(u.target || 0) - Number(u.totalPoin || 0)), 0);
+        const grid = document.getElementById('strategyGrid');
+        
+        if (sisa <= 0) {
+            grid.innerHTML = `<div class="col-span-3 text-center py-2 text-green-400 font-black text-[10px] uppercase tracking-widest">Target Tercapai! Kerja Bagus.</div>`;
+        } else {
+            const pBulk = (0.6 + 0.3 + (22 * 0.1)) * 0.5;
+            const pMulti = (0.6 + 0.3 + (5 * 0.1)) * 0.5;
+            const pSingle = (0.6 + 0.3 + (1 * 0)) * 0.5;
+
+            grid.innerHTML = `
+                <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center">
+                    <p class="text-[7px] font-black text-blue-400 uppercase mb-1">Station BULK</p>
+                    <p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pBulk)} Pkt</p>
+                    <p class="text-[7px] text-slate-500 mt-1 italic">Min. 22 Qty</p>
+                </div>
+                <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center">
+                    <p class="text-[7px] font-black text-purple-400 uppercase mb-1">Station MULTI</p>
+                    <p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pMulti)} Pkt</p>
+                    <p class="text-[7px] text-slate-500 mt-1 italic">Min. 5 Qty</p>
+                </div>
+                <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center">
+                    <p class="text-[7px] font-black text-orange-400 uppercase mb-1">Station SINGLE</p>
+                    <p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pSingle)} Pkt</p>
+                    <p class="text-[7px] text-slate-500 mt-1 italic">Min. 1 Qty</p>
+                </div>
+            `;
+        }
+
+        let html = '';
+        (u.detailCL || []).forEach((d, idx) => {
+            html += `
+                <div onclick="showFormula('${un}', ${idx})" class="bg-white p-5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm cursor-pointer hover:border-blue-400 transition-all">
+                    <div class="flex items-center gap-4">
+                        <div class="flex flex-col gap-1">
+                            <span class="px-2 py-0.5 rounded-md ${d.peran === 'Packer' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'} text-[7px] font-black border border-current uppercase w-fit tracking-tighter">${d.peran}</span>
+                            <p class="font-black text-slate-800 mono text-xs uppercase">${d.cl}</p>
+                            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">[ ${d.kategori} ]</span>
+                        </div>
                     </div>
-                `;
-            });
-            document.getElementById('listContainer').innerHTML = html;
-            document.getElementById('modalList').classList.remove('hidden');
-        }
+                    <p class="text-xl font-black text-slate-900 leading-none">+${Number(d.poinDapat || 0).toFixed(2)}</p>
+                </div>
+            `;
+        });
 
-        function showFormula(username, index) {
-            const userData = localData.find(u => u.username === username);
-            const detail = userData.detailCL[index];
-            document.getElementById('f-raw').innerText = detail.formulaAsli;
-            document.getElementById('f-split').innerText = detail.logikaBagi;
-            document.getElementById('modalFormula').classList.remove('hidden');
-        }
+        document.getElementById('listContainer').innerHTML = html;
+        document.getElementById('modalList').classList.remove('hidden');
+    }
 
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        document.getElementById('searchBox').addEventListener('input', render);
-        init();
-    </script>
+    function showFormula(username, index) {
+        const userData = localData.find(u => u.username === username);
+        const detail = userData?.detailCL?.[index];
+        if (!detail) return;
+
+        document.getElementById('f-raw').innerText = detail.formulaAsli || "-";
+        document.getElementById('f-split').innerText = detail.logikaBagi || "-";
+        document.getElementById('modalFormula').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    document.getElementById('searchBox').addEventListener('input', render);
+    init();
+</script>
 </body>
 </html>
