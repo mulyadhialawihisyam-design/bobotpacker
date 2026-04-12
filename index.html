@@ -19,7 +19,6 @@
         .status-perbantuan { color: #64748b; background: rgba(248, 250, 252, 0.9); border: 1px solid #f1f5f9; }
         .bg-strategy { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
         
-        /* Background di dalam Table Container Dashboard Utama */
         .table-container-bg {
             background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url('https://i.imgur.com/aiiFWIX.jpeg');
             background-size: cover;
@@ -59,7 +58,6 @@
         .brand-name { color: #0f172a; font-weight: 800; letter-spacing: -0.02em; }
         .brand-dot { color: #2563eb; }
 
-        /* WARNA TABEL LAPORAN SESUAI INSTRUKSI */
         .row-red { background-color: #ef4444 !important; color: #ffffff !important; }
         .row-blue { background-color: #2563eb !important; color: #ffffff !important; }
         .row-white { background-color: #ffffff !important; color: #0f172a !important; }
@@ -98,7 +96,7 @@
             <div>
                 <h1 class="text-3xl font-black uppercase tracking-tighter leading-none">Packing Analytics</h1>
                 <div class="flex items-center gap-3 mt-2">
-                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Internal WMS Dashboard v2.2</p>
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Internal WMS Dashboard v11.4</p>
                     <span class="w-1 h-1 bg-slate-700 rounded-full"></span>
                     <p class="text-blue-500 text-[10px] font-black uppercase tracking-widest">Update: <span id="ui-last-update">...</span></p>
                 </div>
@@ -125,7 +123,7 @@
         <div class="table-container-bg rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-100 bg-white/60 backdrop-blur-md flex flex-col md:flex-row gap-4 items-end">
                 <div class="flex-1 w-full">
-                    <textarea id="searchBox" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm mono outline-none focus:border-blue-500 transition-all" rows="2" placeholder="TEMPEL NAMA UNTUK FILTER..."></textarea>
+                    <textarea id="searchBox" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm mono outline-none focus:border-blue-500 transition-all" rows="2" placeholder="TEMPEL NAMA PER BARIS..."></textarea>
                 </div>
                 <button onclick="openReportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -243,16 +241,6 @@
                 </thead>
                 <tbody id="reportTableBody"></tbody>
             </table>
-            
-            <div class="p-12 flex flex-col items-center justify-center gap-4 bg-white border-t border-slate-100">
-                <p class="text-[9px] font-black uppercase text-slate-400 tracking-[0.4em]">Integrated Logistics Analytics</p>
-                <div class="flex items-center gap-2">
-                    <p class="text-slate-400 font-bold text-[10px] uppercase tracking-tight">System Optimized by</p>
-                    <div class="h-4 w-[1px] bg-slate-200 mx-2"></div>
-                    <p class="text-md brand-name uppercase">Muly@<span class="brand-dot">.</span>Id</p>
-                </div>
-                <p class="text-[7px] font-mono text-slate-300 font-bold uppercase tracking-[0.2em]">© 2026 ANALYTICS CORE • ALL RIGHTS RESERVED</p>
-            </div>
         </div>
     </div>
 
@@ -275,19 +263,28 @@
                 setTimeout(() => { loader.style.display = 'none'; }, 600);
             }, 800);
         } catch (e) {
-            loader.innerHTML = '<p class="text-red-500 font-bold uppercase tracking-widest text-center px-6">KONEKSI GAGAL.<br>Gagal sinkronisasi data.</p>';
+            loader.innerHTML = '<p class="text-red-500 font-bold uppercase tracking-widest text-center px-6">KONEKSI GAGAL.</p>';
         }
     }
 
+ 
     function render() {
-        const query = document.getElementById('searchBox').value.toLowerCase();
-        const filter = query.split(/\n+/).map(n => n.trim()).filter(n => n !== "");
+        const textInput = document.getElementById('searchBox').value.toLowerCase();
+        
+        // Memecah input berdasarkan baris dan membersihkan spasi di awal/akhir
+        const lines = textInput.split(/\n/).map(line => line.trim()).filter(line => line !== "");
+        
         let filtered = localData;
-        if (filter.length > 0) {
-            filtered = localData.filter(u => filter.some(f => (u.nama || "").toLowerCase().includes(f)));
+        if (lines.length > 0) {
+            filtered = localData.filter(u => {
+                const operatorName = (u.nama || "").toLowerCase().trim();
+                // 🔥 PERBAIKAN: Menggunakan '===' agar nama harus SAMA PERSIS dengan salah satu baris
+                return lines.some(line => operatorName === line);
+            });
         }
         currentFiltered = filtered;
 
+        // ... sisanya kode render poin dan tabel tetap sama seperti sebelumnya ...
         let sumP = 0, sumK = 0;
         const tbody = document.getElementById('tableContent');
         tbody.innerHTML = '';
@@ -335,7 +332,6 @@
     function openReportModal() {
         const reportBody = document.getElementById('reportTableBody');
         reportBody.innerHTML = '';
-        
         let totalEff = 0, mpProbation = 0, mpSenior = 0;
         const countMP = currentFiltered.length;
 
@@ -350,20 +346,10 @@
             const target = Number(u.target || 0);
             const pct = target > 0 ? Math.round((poin / target) * 100) : 0;
             totalEff += pct;
-
             if(u.status === "PROBATION") mpProbation++;
             if(u.status === "SENIOR") mpSenior++;
 
-            let colorClass = "";
-            if (pct <= 80) {
-                colorClass = "row-red";
-            } else if (pct > 80 && pct <= 90) {
-                colorClass = "row-blue";
-            } else if (pct > 90 && pct <= 100) {
-                colorClass = "row-white";
-            } else {
-                colorClass = "row-gold";
-            }
+            let colorClass = pct <= 80 ? "row-red" : (pct <= 90 ? "row-blue" : (pct <= 100 ? "row-white" : "row-gold"));
 
             reportBody.innerHTML += `
                 <tr class="${colorClass}">
@@ -380,7 +366,6 @@
         document.getElementById('rep-senior').innerText = mpSenior;
         document.getElementById('rep-total-mp').innerText = countMP;
         document.getElementById('rep-avg-eff').innerText = countMP > 0 ? Math.round(totalEff / countMP) + "%" : "0%";
-        
         document.getElementById('modalReport').classList.remove('hidden');
     }
 
@@ -395,14 +380,9 @@
         if (sisa <= 0) {
             grid.innerHTML = `<div class="col-span-3 text-center py-2 text-green-400 font-black text-[10px] uppercase tracking-widest">Target Tercapai! Kerja Bagus.</div>`;
         } else {
-            /* LOGIKA STRATEGI (PREDIKSI SISA)
-               Menggunakan pembagian poin baru untuk estimasi jumlah paket yang dibutuhkan.
-               Diasumsikan rata-rata dikerjakan 2 orang (Packer + 1 Asisten) = 50% / 50%
-            */
             const pBulk = (0.6 + 0.3 + (22 * 0.1)) * 0.5;
             const pMulti = (0.6 + 0.3 + (5 * 0.1)) * 0.5;
             const pSingle = (0.6 + 0.3 + (1 * 0)) * 0.5;
-
             grid.innerHTML = `
                 <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center"><p class="text-[7px] font-black text-blue-400 uppercase mb-1">Station BULK</p><p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pBulk)} Pkt</p></div>
                 <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center"><p class="text-[7px] font-black text-purple-400 uppercase mb-1">Station MULTI</p><p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pMulti)} Pkt</p></div>
@@ -431,12 +411,6 @@
         const userData = localData.find(u => u.username === username);
         const detail = userData?.detailCL?.[index];
         if (!detail) return;
-
-        /* PENJELASAN FORMULA (LOGIKA BARU)
-           Bagian ini hanya menampilkan data dari backend. 
-           Backend Anda (Google Script) harus sudah menerapkan:
-           - Jika Asisten > 0: Packer = 50%, Asisten = 50% / Jumlah_Asisten
-        */
         document.getElementById('f-raw').innerText = detail.formulaAsli || "-";
         document.getElementById('f-split').innerText = detail.logikaBagi || "-";
         document.getElementById('modalFormula').classList.remove('hidden');
