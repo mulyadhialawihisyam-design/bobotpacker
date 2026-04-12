@@ -355,15 +355,14 @@
             if(u.status === "SENIOR") mpSenior++;
 
             let colorClass = "";
-            // LOGIKA WARNA & KONTRAST TEKS
             if (pct <= 80) {
-                colorClass = "row-red"; // Teks Putih
+                colorClass = "row-red";
             } else if (pct > 80 && pct <= 90) {
-                colorClass = "row-blue"; // Teks Putih
+                colorClass = "row-blue";
             } else if (pct > 90 && pct <= 100) {
-                colorClass = "row-white"; // Teks Hitam
+                colorClass = "row-white";
             } else {
-                colorClass = "row-gold"; // Teks Hitam
+                colorClass = "row-gold";
             }
 
             reportBody.innerHTML += `
@@ -392,18 +391,37 @@
         document.getElementById('modalUserStatus').innerText = u.status + " • TARGET " + u.target;
         const sisa = Math.max((Number(u.target || 0) - Number(u.totalPoin || 0)), 0);
         const grid = document.getElementById('strategyGrid');
+        
         if (sisa <= 0) {
             grid.innerHTML = `<div class="col-span-3 text-center py-2 text-green-400 font-black text-[10px] uppercase tracking-widest">Target Tercapai! Kerja Bagus.</div>`;
         } else {
-            const pBulk = (0.6 + 0.3 + (22 * 0.1)) * 0.5, pMulti = (0.6 + 0.3 + (5 * 0.1)) * 0.5, pSingle = (0.6 + 0.3 + (1 * 0)) * 0.5;
+            /* LOGIKA STRATEGI (PREDIKSI SISA)
+               Menggunakan pembagian poin baru untuk estimasi jumlah paket yang dibutuhkan.
+               Diasumsikan rata-rata dikerjakan 2 orang (Packer + 1 Asisten) = 50% / 50%
+            */
+            const pBulk = (0.6 + 0.3 + (22 * 0.1)) * 0.5;
+            const pMulti = (0.6 + 0.3 + (5 * 0.1)) * 0.5;
+            const pSingle = (0.6 + 0.3 + (1 * 0)) * 0.5;
+
             grid.innerHTML = `
                 <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center"><p class="text-[7px] font-black text-blue-400 uppercase mb-1">Station BULK</p><p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pBulk)} Pkt</p></div>
                 <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center"><p class="text-[7px] font-black text-purple-400 uppercase mb-1">Station MULTI</p><p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pMulti)} Pkt</p></div>
                 <div class="bg-white/5 p-3 rounded-xl border border-white/10 text-center"><p class="text-[7px] font-black text-orange-400 uppercase mb-1">Station SINGLE</p><p class="text-[10px] font-bold text-white leading-none">${Math.ceil(sisa / pSingle)} Pkt</p></div>`;
         }
+        
         let html = '';
         (u.detailCL || []).forEach((d, idx) => {
-            html += `<div onclick="showFormula('${un}', ${idx})" class="bg-white p-5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm cursor-pointer hover:border-blue-400 transition-all"><div class="flex items-center gap-4"><div class="flex flex-col gap-1"><span class="px-2 py-0.5 rounded-md ${d.peran === 'Packer' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'} text-[7px] font-black border border-current uppercase w-fit tracking-tighter">${d.peran}</span><p class="font-black text-slate-800 mono text-xs uppercase">${d.cl}</p><span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">[ ${d.kategori} ]</span></div></div><p class="text-xl font-black text-slate-900 leading-none">+${Number(d.poinDapat || 0).toFixed(2)}</p></div>`;
+            html += `
+            <div onclick="showFormula('${un}', ${idx})" class="bg-white p-5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm cursor-pointer hover:border-blue-400 transition-all">
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col gap-1">
+                        <span class="px-2 py-0.5 rounded-md ${d.peran === 'Packer' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'} text-[7px] font-black border border-current uppercase w-fit tracking-tighter">${d.peran}</span>
+                        <p class="font-black text-slate-800 mono text-xs uppercase">${d.cl}</p>
+                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">[ ${d.kategori} ]</span>
+                    </div>
+                </div>
+                <p class="text-xl font-black text-slate-900 leading-none">+${Number(d.poinDapat || 0).toFixed(2)}</p>
+            </div>`;
         });
         document.getElementById('listContainer').innerHTML = html;
         document.getElementById('modalList').classList.remove('hidden');
@@ -413,6 +431,12 @@
         const userData = localData.find(u => u.username === username);
         const detail = userData?.detailCL?.[index];
         if (!detail) return;
+
+        /* PENJELASAN FORMULA (LOGIKA BARU)
+           Bagian ini hanya menampilkan data dari backend. 
+           Backend Anda (Google Script) harus sudah menerapkan:
+           - Jika Asisten > 0: Packer = 50%, Asisten = 50% / Jumlah_Asisten
+        */
         document.getElementById('f-raw').innerText = detail.formulaAsli || "-";
         document.getElementById('f-split').innerText = detail.logikaBagi || "-";
         document.getElementById('modalFormula').classList.remove('hidden');
